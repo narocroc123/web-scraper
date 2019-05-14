@@ -1,10 +1,11 @@
 # Python Web Scraper
-A simple web scraper built in Python using the BeautifulSoup HTML parser. Once scraped the data can be exported to Excel via the `index.csv` file.
+A simple web scraper built in Python using the BeautifulSoup HTML parser. This tool allows websites to be scraped and maps all found urls.
 
 ## Web Scraping Guidelines
 1. Check the websites terms and conditions before scraping it, especially the statements about legal use of data. Usually, the scarped data should not be used for commerical purposes.
 2. Do not spam websites with data requests, this can break websites. One request for one webpage per second is good practice.
 3. Website layouts change, so be sure to revisit the site and rewrite the code as needed.
+4. [Scrape This Site](https://scrapethissite.com) is a great resource to learn web scraping in a safe sandbox.
 
 ## How To Contribute
 If you'd like to contribute you can follow these steps to fork the repository and make changes:

@@ -1,38 +1,71 @@
 # import libraries
-import urllib
+from urllib.parse import urlsplit
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+import requests
+import requests.exceptions
+from collections import deque
 
 # specifying the url
-url = 'INPUT URL HERE'
+url = "INPUT URL HERE"
 
-# query the website and return html to the variable 'page'
-data = []
-for pg in url:
-    r = urllib.request.urlopen(pg)
+# deque object to queue urls to be scraped next
+new_urls = deque([url])
 
-# parse the HTML Using Beuatiful Soup and Store the Variable 'soup'
-soup = BeautifulSoup(r, ‘html.parser’)
+# set of urls that have been processed
+processed_urls = set()
 
-# find value of name <div>
-name_box = soup.find('h1', attrs={'class': 'name'})
+# set of domains inside target website
+local_urls = set()
 
-# extract text data
-name = name_box.text.strip() # strip() used to remove starting and trailing
-print(name)
+# set of domains outside taget website
+foreign_urls = set()
 
-# get price index
-price_box = soup.find('div', attrs={'class':'price'})
-    price = price_box.text
-    print (price)
+# set of broken urls
+broken_urls = set()
 
-data.append((name, price))
+# process urls until queue is exhausted
+while len(new_urls):
+    # move url from queue to processed
+    url = new_urls.popleft()
+    processed_urls.add(url)
+    # print current url
+    print("Processing" % url)
+    # catching broken urls
+    try:
+        response = request.get(url)
+    except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
+        # add broken url to own set
+        broken_urls.add(url)
+        continue
+    # extract base url to differentiate between local and foreign links
+    parts = urlsplit(url)
+    base = "{0.netloc}".format(parts)
+    strip_base = base.replace("www.", "")
+    base_url = "{0.scheme}://{0.netloc}".format(parts)
+    path = url[:url.rfind('/')+1] if '/' in parts.path else url
+    # using BeautifulSoup
+    soup = BeautifulSoup(response.text, "lxml")
 
-# export to csv
-import csv 
-from datetime import datetime
+    for link in soup.find.all('a'):
+        # extract links from anchor tags
+        anchor = link.attrs["href"] if "href" in link.attrs else ''
+    
+    # scrape links and sort into correct sets
+    if anchor.startswith('/'):
+        local_link = base_url + anchor
+        local_urls.add(local_link)
+    elif strip_base in anchor:
+        local_urls.add(anchor)
+    elif not anchor.startswith('http'):
+        local_link = path + anchor
+        local_urls.add(local_link)
+    else:
+        foreign_urls.add(anchor)
 
-with open('index.csv', 'a') as csv_file:
-    writer = csv.writer(csv_file)
-    for name, price in data:
-    writer.writerow([name, price, datetime.now()])
-    writer.writerow('')
+    # limit scraping to local urls
+    for link in local_urls:
+        if not link in new_urls and not link in processed_urls:
+            new_urls.append(link)
+
+print(processed_urls)
